@@ -401,6 +401,79 @@
       line-height: 1.5;
     }
 
+    .answer-options {
+      display: grid;
+      gap: 8px;
+      margin: 0 0 12px;
+    }
+
+    .choice-button {
+      display: grid;
+      grid-template-columns: 28px minmax(0, 1fr);
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      min-height: 48px;
+      padding: 8px 11px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      color: var(--ink);
+      background: #fff;
+      cursor: pointer;
+      text-align: left;
+      line-height: 1.4;
+      transition: border-color .16s ease, background-color .16s ease, transform .16s ease;
+    }
+
+    .choice-button:hover:not(:disabled) {
+      border-color: #9bc9bf;
+      background: #f5faf7;
+      transform: translateY(-1px);
+    }
+
+    .choice-button:disabled { cursor: default; }
+
+    .choice-letter {
+      display: grid;
+      width: 27px;
+      height: 27px;
+      place-items: center;
+      border-radius: 8px;
+      color: #52615c;
+      background: #edf1ec;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .choice-button.is-correct {
+      border-color: #5aa879;
+      background: #eff8f1;
+    }
+
+    .choice-button.is-correct .choice-letter { color: #fff; background: #34885a; }
+
+    .choice-button.is-wrong {
+      border-color: #d97569;
+      background: #fff4f1;
+    }
+
+    .choice-button.is-wrong .choice-letter { color: #fff; background: #c65348; }
+
+    .answer-feedback {
+      min-height: 24px;
+      margin: 0 0 13px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .answer-feedback.is-correct { color: #26734a; }
+    .answer-feedback.is-wrong { color: #a43d33; }
+
+    .answer-feedback:empty { display: none; }
+
+    .answer-feedback strong { font-weight: 800; }
+
     .answer-box {
       margin: 0 0 16px;
       padding: 15px 17px;
@@ -588,7 +661,7 @@ Memoria
 Testimonio</textarea>
         <button class="apply-options-button" id="apply-options-button" type="button">Aplicar opciones</button>
       </div>
-      <p class="options-help" id="options-help">Escribe de 2 a 8 opciones, una por línea. Las categorías originales conservan sus preguntas. Para una opción nueva, escribe: Opción | Pregunta | Respuesta.</p>
+      <p class="options-help" id="options-help">Escribe de 2 a 8 categorías, una por línea. Para añadir una pregunta a una categoría nueva, escribe: Categoría | Pregunta | Respuesta correcta | Distractor 1 | Distractor 2 | Distractor 3. Repite la categoría en otra línea para añadir preguntas.</p>
       <p class="options-status" id="options-status" role="status" aria-live="polite"></p>
     </section>
 
@@ -623,18 +696,10 @@ Testimonio</textarea>
           <p class="question-text" id="question-text">Gira la ruleta para descubrir una pregunta.</p>
         </div>
 
-        <div class="answer-box" id="answer-box" hidden>
-          <span class="answer-label">Respuesta</span>
-          <span id="answer-text"></span>
-        </div>
+        <div class="answer-options" id="answer-options" role="group" aria-label="Opciones de respuesta"></div>
+        <p class="answer-feedback" id="answer-feedback" aria-live="polite"></p>
 
         <div class="question-actions">
-          <button class="secondary-button" id="answer-button" type="button" disabled>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle>
-            </svg>
-            <span>Mostrar respuesta</span>
-          </button>
           <button class="secondary-button" id="next-button" type="button" disabled>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M5 12h14M13 6l6 6-6 6"></path>
@@ -709,12 +774,11 @@ Testimonio</textarea>
     const palette = ["#ed705c", "#3479ce", "#e8b83f", "#815eb2", "#45a978", "#d45a82", "#298d9a", "#bb783d"];
     const wheel = document.getElementById("wheel");
     const spinButton = document.getElementById("spin-button");
-    const answerButton = document.getElementById("answer-button");
     const nextButton = document.getElementById("next-button");
     const categoryName = document.getElementById("category-name");
     const questionText = document.getElementById("question-text");
-    const answerBox = document.getElementById("answer-box");
-    const answerText = document.getElementById("answer-text");
+    const answerOptions = document.getElementById("answer-options");
+    const answerFeedback = document.getElementById("answer-feedback");
     const historyList = document.getElementById("history-list");
     const liveRegion = document.getElementById("live-region");
 
@@ -773,6 +837,54 @@ Testimonio</textarea>
       return questions;
     }
 
+    function shuffledChoices(category, question) {
+      const distractors = question.distractors ||
+        (questionBank[category] || []).filter(item => item !== question).map(item => item.answer);
+      const uniqueDistractors = [...new Set(distractors.filter(answer => answer && answer !== question.answer))];
+      const shuffledDistractors = uniqueDistractors.sort(() => Math.random() - 0.5).slice(0, 3);
+      const choices = [question.answer, ...shuffledDistractors].sort(() => Math.random() - 0.5);
+      return choices;
+    }
+
+    function renderChoices(category, question) {
+      answerOptions.replaceChildren();
+      answerFeedback.textContent = "";
+      answerFeedback.className = "answer-feedback";
+      const choices = shuffledChoices(category, question);
+      choices.forEach((choice, index) => {
+        const button = document.createElement("button");
+        button.className = "choice-button";
+        button.type = "button";
+        button.setAttribute("aria-pressed", "false");
+        const letter = document.createElement("span");
+        letter.className = "choice-letter";
+        letter.textContent = String.fromCharCode(65 + index);
+        const text = document.createElement("span");
+        text.textContent = choice;
+        button.append(letter, text);
+        button.addEventListener("click", () => selectAnswer(button, choice, question));
+        answerOptions.append(button);
+      });
+    }
+
+    function selectAnswer(selectedButton, choice, question) {
+      if (selectedButton.disabled) return;
+      const isCorrect = choice === question.answer;
+      answerOptions.querySelectorAll(".choice-button").forEach(button => {
+        button.disabled = true;
+        const isAnswer = button.lastElementChild.textContent === question.answer;
+        if (isAnswer) button.classList.add("is-correct");
+        if (button === selectedButton && !isCorrect) button.classList.add("is-wrong");
+      });
+      answerFeedback.classList.add(isCorrect ? "is-correct" : "is-wrong");
+      answerFeedback.textContent = isCorrect
+        ? `¡Correcto! ${question.explanation || ""}`
+        : `No es correcto. La respuesta correcta es: ${question.answer} ${question.explanation || ""}`;
+      selectedButton.setAttribute("aria-pressed", "true");
+      nextButton.disabled = false;
+      liveRegion.textContent = isCorrect ? "Respuesta correcta." : `Respuesta incorrecta. La correcta es: ${question.answer}`;
+    }
+
     function drawQuestion(category) {
       if (decks[category].length === 0) {
         decks[category] = shuffledQuestions(category);
@@ -787,11 +899,8 @@ Testimonio</textarea>
       categoryName.textContent = category;
       categoryName.classList.remove("is-empty");
       questionText.textContent = currentQuestion.question;
-      answerText.textContent = currentQuestion.answer;
-      answerBox.hidden = true;
-      answerButton.disabled = false;
-      answerButton.querySelector("span").textContent = "Mostrar respuesta";
-      nextButton.disabled = false;
+      renderChoices(category, currentQuestion);
+      nextButton.disabled = true;
       liveRegion.textContent = `${category}. Pregunta ${currentQuestion.question}`;
     }
 
@@ -825,7 +934,9 @@ Testimonio</textarea>
       isSpinning = true;
       spinButton.disabled = true;
       spinButton.querySelector("span").textContent = "Girando...";
-      answerBox.hidden = true;
+      answerOptions.replaceChildren();
+      answerFeedback.textContent = "";
+      nextButton.disabled = true;
 
       const selectedIndex = Math.floor(Math.random() * categories.length);
       const selectedCategory = categories[selectedIndex];
@@ -863,18 +974,28 @@ Testimonio</textarea>
         const name = parts[0];
         if (!name) continue;
         const key = name.toLocaleLowerCase("es");
-        if (seen.has(key)) continue;
-        seen.add(key);
+        const isBuiltIn = Boolean(questionBank[name]);
+        if (isBuiltIn) {
+          if (!seen.has(key)) parsedOptions.push(name);
+          seen.add(key);
+          continue;
+        }
 
-        if (!questionBank[name]) {
-          if (parts.length < 3 || !parts[1] || !parts.slice(2).join(" | ").trim()) {
-            status.textContent = `Añade pregunta y respuesta para la opción nueva «${name}».`;
+        if (parts.length < 6 || parts.slice(1, 6).some(part => !part)) {
+            status.textContent = `Para «${name}», completa pregunta, respuesta correcta y tres distractores separados por |.`;
             status.classList.add("is-error");
             return;
-          }
-          nextCustomQuestionBank[name] = [{ question: parts[1], answer: parts.slice(2).join(" | ").trim() }];
         }
-        parsedOptions.push(name);
+        if (!seen.has(key)) {
+          parsedOptions.push(name);
+          nextCustomQuestionBank[name] = [];
+          seen.add(key);
+        }
+        nextCustomQuestionBank[name].push({
+          question: parts[1],
+          answer: parts[2],
+          distractors: parts.slice(3, 6)
+        });
       }
 
       if (parsedOptions.length < 2 || parsedOptions.length > 8) {
@@ -892,8 +1013,8 @@ Testimonio</textarea>
       categoryName.textContent = "Aún sin girar";
       categoryName.classList.add("is-empty");
       questionText.textContent = "Gira la ruleta para descubrir una pregunta.";
-      answerBox.hidden = true;
-      answerButton.disabled = true;
+      answerOptions.replaceChildren();
+      answerFeedback.textContent = "";
       nextButton.disabled = true;
       currentRotation = 0;
       categoryHistory.length = 0;
@@ -906,13 +1027,6 @@ Testimonio</textarea>
 
     spinButton.addEventListener("click", spinWheel);
     document.getElementById("apply-options-button").addEventListener("click", applyOptions);
-
-    answerButton.addEventListener("click", () => {
-      if (!currentQuestion) return;
-      answerBox.hidden = !answerBox.hidden;
-      answerButton.querySelector("span").textContent = answerBox.hidden ? "Mostrar respuesta" : "Ocultar respuesta";
-      if (!answerBox.hidden) liveRegion.textContent = `Respuesta: ${currentQuestion.answer}`;
-    });
 
     nextButton.addEventListener("click", () => {
       if (currentCategory && !isSpinning) drawQuestion(currentCategory);
