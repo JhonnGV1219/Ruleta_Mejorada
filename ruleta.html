@@ -114,10 +114,86 @@
 
     .game-layout {
       display: grid;
-      grid-template-columns: minmax(320px, .94fr) minmax(360px, 1.06fr);
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       align-items: stretch;
       gap: 22px;
     }
+
+    .options-panel {
+      margin-bottom: 20px;
+      padding: 18px 20px;
+      border: 1px solid rgba(218, 228, 218, .9);
+      border-radius: 16px;
+      background: var(--surface);
+      box-shadow: 0 8px 24px rgba(31, 54, 47, .06);
+    }
+
+    .options-heading {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .options-heading h2 { margin: 0; font-size: 14px; }
+
+    .options-heading label {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .options-controls {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: stretch;
+      gap: 10px;
+    }
+
+    .options-input {
+      width: 100%;
+      min-height: 76px;
+      resize: vertical;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      color: var(--ink);
+      background: #fbfcfa;
+      font: inherit;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .options-input:focus-visible {
+      outline: 3px solid rgba(8, 127, 117, .2);
+      border-color: var(--teal);
+    }
+
+    .apply-options-button {
+      min-width: 138px;
+      align-self: center;
+      padding: 0 17px;
+      color: #fff;
+      border: 0;
+      border-radius: 10px;
+      background: var(--teal);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 750;
+    }
+
+    .apply-options-button:hover { background: var(--teal-dark); }
+    .apply-options-button:focus-visible { outline: 3px solid #e2a72a; outline-offset: 3px; }
+
+    .options-help, .options-status {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    .options-status { min-height: 16px; color: var(--teal-dark); }
+    .options-status.is-error { color: #b13e32; }
 
     .wheel-panel, .quiz-panel {
       border: 1px solid rgba(218, 228, 218, .9);
@@ -186,14 +262,7 @@
       overflow: hidden;
       border: 7px solid #fff;
       border-radius: 50%;
-      background: conic-gradient(
-        from -36deg,
-        var(--experience) 0deg 72deg,
-        var(--reason) 72deg 144deg,
-        var(--perception) 144deg 216deg,
-        var(--memory) 216deg 288deg,
-        var(--testimony) 288deg 360deg
-      );
+      background: var(--wheel-background, conic-gradient(#ed705c, #3479ce, #e8b83f, #815eb2, #45a978));
       box-shadow: 0 8px 23px rgba(34, 53, 48, .2), inset 0 0 0 1px rgba(255, 255, 255, .45);
       transform: rotate(var(--rotation, 0deg));
       transition: transform 5s cubic-bezier(.12, .74, .12, 1);
@@ -221,24 +290,18 @@
       width: 98px;
       min-height: 28px;
       place-items: center;
+      padding: 2px;
       color: #fff;
       font-size: 11px;
       font-weight: 800;
       line-height: 1.15;
       text-align: center;
       text-shadow: 0 1px 2px rgba(0, 0, 0, .18);
-      transform: rotate(var(--label-angle)) translateY(-119px) rotate(calc(0deg - var(--label-angle)));
-      transform-origin: center;
-      transition: transform 5s cubic-bezier(.12, .74, .12, 1);
+      overflow-wrap: anywhere;
+      transform: translate(-50%, -50%);
     }
 
-    .wheel-label:nth-of-type(2) { --label-base: 0deg; }
-    .wheel-label:nth-of-type(3) { --label-base: 72deg; }
-    .wheel-label:nth-of-type(4) { --label-base: 144deg; color: #332b18; text-shadow: none; }
-    .wheel-label:nth-of-type(5) { --label-base: 216deg; }
-    .wheel-label:nth-of-type(6) { --label-base: 288deg; }
-
-    .wheel-label { --label-angle: calc(var(--label-base) + var(--rotation, 0deg)); }
+    .wheel-label.is-dark { color: #332b18; text-shadow: none; }
 
     .spin-button, .secondary-button {
       display: inline-flex;
@@ -453,23 +516,32 @@
       .page-shell { width: min(560px, calc(100% - 28px)); padding-top: 22px; }
       .topbar { padding-bottom: 19px; }
       .intro { padding: 26px 0 21px; }
+      .options-panel { padding: 16px; }
       .game-layout { grid-template-columns: 1fr; gap: 15px; }
       .wheel-panel { padding: 20px 18px; }
       .wheel-stage { width: min(100%, 330px); }
-      .wheel-label { width: 90px; font-size: 10px; }
       .quiz-panel { min-height: 400px; padding: 22px 19px; }
       .question-box { min-height: 150px; margin-top: 17px; padding: 18px; }
       .question-text { font-size: 18px; }
+    }
+
+    @media (max-width: 820px) {
+      .game-layout { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 380px) {
       .page-shell { width: calc(100% - 22px); }
       .top-label { font-size: 10px; }
       .wheel-stage { width: min(100%, 300px); }
-      .wheel-label { width: 78px; font-size: 9px; }
       .quiz-panel { padding: 19px 15px; }
       .question-actions { flex-direction: column; }
       .secondary-button { flex-basis: 44px; }
+    }
+
+    @media (max-width: 520px) {
+      .options-heading { align-items: flex-start; flex-direction: column; gap: 5px; }
+      .options-controls { grid-template-columns: 1fr; }
+      .apply-options-button { min-height: 44px; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -503,6 +575,23 @@
       <p class="intro-copy">Gira la ruleta, explora cada categoría y pon a prueba lo que sabes.</p>
     </section>
 
+    <section class="options-panel" aria-labelledby="options-title">
+      <div class="options-heading">
+        <h2 id="options-title">Opciones de la ruleta</h2>
+        <label for="options-input">Edita las categorías a tu gusto</label>
+      </div>
+      <div class="options-controls">
+        <textarea class="options-input" id="options-input" aria-describedby="options-help options-status" spellcheck="false">Experiencia
+Razón
+Percepción
+Memoria
+Testimonio</textarea>
+        <button class="apply-options-button" id="apply-options-button" type="button">Aplicar opciones</button>
+      </div>
+      <p class="options-help" id="options-help">Escribe de 2 a 8 opciones, una por línea. Las categorías originales conservan sus preguntas. Para una opción nueva, escribe: Opción | Pregunta | Respuesta.</p>
+      <p class="options-status" id="options-status" role="status" aria-live="polite"></p>
+    </section>
+
     <section class="game-layout" aria-label="Ruleta de preguntas">
       <div class="wheel-panel">
         <div class="panel-heading">
@@ -512,13 +601,7 @@
 
         <div class="wheel-stage">
           <span class="pointer" aria-hidden="true"></span>
-          <div class="wheel" id="wheel" role="img" aria-label="Ruleta con cinco categorías de fuentes del conocimiento">
-            <span class="wheel-label" style="--label-base: 0deg">Experiencia</span>
-            <span class="wheel-label" style="--label-base: 72deg">Razón</span>
-            <span class="wheel-label" style="--label-base: 144deg">Percepción</span>
-            <span class="wheel-label" style="--label-base: 216deg">Memoria</span>
-            <span class="wheel-label" style="--label-base: 288deg">Testimonio</span>
-          </div>
+          <div class="wheel" id="wheel" role="img" aria-label="Ruleta con cinco categorías de fuentes del conocimiento"></div>
         </div>
 
         <button class="spin-button" id="spin-button" type="button">
@@ -621,14 +704,9 @@
       ]
     };
 
-    const categories = Object.keys(questionBank);
-    const categoryColors = {
-      "Experiencia": "#ed705c",
-      "Razón": "#3479ce",
-      "Percepción": "#e8b83f",
-      "Memoria": "#815eb2",
-      "Testimonio": "#45a978"
-    };
+    let categories = Object.keys(questionBank);
+    const customQuestionBank = {};
+    const palette = ["#ed705c", "#3479ce", "#e8b83f", "#815eb2", "#45a978", "#d45a82", "#298d9a", "#bb783d"];
     const wheel = document.getElementById("wheel");
     const spinButton = document.getElementById("spin-button");
     const answerButton = document.getElementById("answer-button");
@@ -640,18 +718,54 @@
     const historyList = document.getElementById("history-list");
     const liveRegion = document.getElementById("live-region");
 
-    // Los mazos se mezclan por categoría para agotar preguntas antes de repetir.
-    const decks = Object.fromEntries(categories.map(category => [category, []]));
+    // Los mazos mezclados evitan repetir preguntas hasta agotar las disponibles.
+    let decks = createDecks(categories);
     let currentCategory = null;
     let currentQuestion = null;
-    let usedQuestionCount = 0;
     let currentRotation = 0;
     let isSpinning = false;
     let spinCount = 0;
     const categoryHistory = [];
 
+    function createDecks(optionList) {
+      return Object.fromEntries(optionList.map(category => [category, []]));
+    }
+
+    function colorFor(index) {
+      return palette[index % palette.length];
+    }
+
+    function renderWheel() {
+      const segmentAngle = 360 / categories.length;
+      const gradientStops = categories.map((category, index) => {
+        const start = index * segmentAngle;
+        const end = (index + 1) * segmentAngle;
+        return `${colorFor(index)} ${start}deg ${end}deg`;
+      });
+      wheel.style.setProperty("--wheel-background", `conic-gradient(from ${-segmentAngle / 2}deg, ${gradientStops.join(", ")})`);
+      wheel.setAttribute("aria-label", `Ruleta con ${categories.length} opciones: ${categories.join(", ")}`);
+      wheel.replaceChildren();
+
+      const diameter = wheel.clientWidth || 300;
+      const radius = diameter * 0.32;
+      const labelWidth = Math.max(48, Math.min(98, 2 * radius * Math.sin(Math.PI / categories.length) * 0.82));
+      categories.forEach((category, index) => {
+        const angle = (index * 2 * Math.PI) / categories.length;
+        const label = document.createElement("span");
+        label.className = "wheel-label";
+        if (index === 2) label.classList.add("is-dark");
+        label.textContent = category;
+        label.style.left = `${50 + (Math.sin(angle) * radius / diameter) * 100}%`;
+        label.style.top = `${50 - (Math.cos(angle) * radius / diameter) * 100}%`;
+        label.style.width = `${labelWidth}px`;
+        label.style.fontSize = categories.length > 6 ? "9px" : "11px";
+        wheel.append(label);
+      });
+      wheel.style.setProperty("--rotation", `${currentRotation}deg`);
+    }
+
     function shuffledQuestions(category) {
-      const questions = [...questionBank[category]];
+      const questions = [...(questionBank[category] || customQuestionBank[category])];
       for (let index = questions.length - 1; index > 0; index--) {
         const swapIndex = Math.floor(Math.random() * (index + 1));
         [questions[index], questions[swapIndex]] = [questions[swapIndex], questions[index]];
@@ -670,7 +784,6 @@
       }
       currentQuestion = decks[category].pop();
       currentCategory = category;
-      usedQuestionCount++;
       categoryName.textContent = category;
       categoryName.classList.remove("is-empty");
       questionText.textContent = currentQuestion.question;
@@ -695,7 +808,7 @@
           item.className = "history-item";
           const dot = document.createElement("span");
           dot.className = "history-dot";
-          dot.style.backgroundColor = categoryColors[category];
+          dot.style.backgroundColor = colorFor(categories.indexOf(category));
           dot.setAttribute("aria-hidden", "true");
           item.append(dot, document.createTextNode(category));
           historyList.append(item);
@@ -716,17 +829,15 @@
 
       const selectedIndex = Math.floor(Math.random() * categories.length);
       const selectedCategory = categories[selectedIndex];
-      const withinSegment = (Math.random() - 0.5) * 34;
-      const targetAngle = (360 - selectedIndex * 72 + withinSegment + 360) % 360;
+      const segmentAngle = 360 / categories.length;
+      const withinSegment = (Math.random() - 0.5) * segmentAngle * 0.7;
+      const targetAngle = (360 - selectedIndex * segmentAngle + withinSegment + 360) % 360;
       const currentAngle = ((currentRotation % 360) + 360) % 360;
       const adjustment = (targetAngle - currentAngle + 360) % 360;
       currentRotation += 360 * 6 + adjustment;
 
       // La ruleta gira varias vueltas y se detiene con el centro del segmento elegido bajo el puntero.
       wheel.style.setProperty("--rotation", `${currentRotation}deg`);
-      document.querySelectorAll(".wheel-label").forEach(label => {
-        label.style.setProperty("--rotation", `${currentRotation}deg`);
-      });
 
       window.setTimeout(() => {
         isSpinning = false;
@@ -737,10 +848,64 @@
         renderHistory();
         drawQuestion(selectedCategory);
         document.getElementById("result-kicker").textContent = "Categoría seleccionada";
-      }, 5050);
+      }, window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 50 : 5050);
+    }
+
+    function applyOptions() {
+      const input = document.getElementById("options-input");
+      const status = document.getElementById("options-status");
+      const parsedOptions = [];
+      const nextCustomQuestionBank = {};
+      const seen = new Set();
+
+      for (const rawLine of input.value.split("\n")) {
+        const parts = rawLine.split("|").map(part => part.trim());
+        const name = parts[0];
+        if (!name) continue;
+        const key = name.toLocaleLowerCase("es");
+        if (seen.has(key)) continue;
+        seen.add(key);
+
+        if (!questionBank[name]) {
+          if (parts.length < 3 || !parts[1] || !parts.slice(2).join(" | ").trim()) {
+            status.textContent = `Añade pregunta y respuesta para la opción nueva «${name}».`;
+            status.classList.add("is-error");
+            return;
+          }
+          nextCustomQuestionBank[name] = [{ question: parts[1], answer: parts.slice(2).join(" | ").trim() }];
+        }
+        parsedOptions.push(name);
+      }
+
+      if (parsedOptions.length < 2 || parsedOptions.length > 8) {
+        status.textContent = "La ruleta necesita entre 2 y 8 opciones distintas.";
+        status.classList.add("is-error");
+        return;
+      }
+
+      categories = parsedOptions;
+      Object.keys(customQuestionBank).forEach(category => delete customQuestionBank[category]);
+      Object.assign(customQuestionBank, nextCustomQuestionBank);
+      decks = createDecks(categories);
+      currentCategory = null;
+      currentQuestion = null;
+      categoryName.textContent = "Aún sin girar";
+      categoryName.classList.add("is-empty");
+      questionText.textContent = "Gira la ruleta para descubrir una pregunta.";
+      answerBox.hidden = true;
+      answerButton.disabled = true;
+      nextButton.disabled = true;
+      currentRotation = 0;
+      categoryHistory.length = 0;
+      spinCount = 0;
+      renderWheel();
+      renderHistory();
+      status.classList.remove("is-error");
+      status.textContent = `Ruleta actualizada con ${categories.length} opciones.`;
     }
 
     spinButton.addEventListener("click", spinWheel);
+    document.getElementById("apply-options-button").addEventListener("click", applyOptions);
 
     answerButton.addEventListener("click", () => {
       if (!currentQuestion) return;
@@ -761,6 +926,10 @@
         spinWheel();
       }
     });
+
+    renderWheel();
+    renderHistory();
+    window.addEventListener("resize", renderWheel);
   </script>
 </body>
 </html>
